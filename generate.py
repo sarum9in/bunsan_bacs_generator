@@ -9,14 +9,14 @@ import subprocess
 import sys
 
 
-force = False
+keep_going = False
 prefix = ''
 tests = []
 test_destination = '{test}'
 environment = {}
 imports = [
     'destination',
-    'force',
+    'keep_going',
     'prefix',
     'tests',
 ]
@@ -185,8 +185,11 @@ def generate():
                     argv_ = list(map(transform, argv))
                     log('{}: {}', test_destination, ' '.join(argv_))
                     with subprocess.Popen(argv_, stdout=output) as p:
-                        if p.wait() != 0 and not force:
-                            raise NonZeroExitStatus()
+                        if p.wait() != 0:
+                            if keep_going:
+                                log('[FAILED]')
+                            else:
+                                raise NonZeroExitStatus(argv_)
                 else:
                     src = transform(argv)
                     log('{} = {}', test_destination, src)
@@ -194,6 +197,10 @@ def generate():
                         output.write(src_file.read())
             if exec_after is not None:
                 execute(exec_after)
+
+
+def opt_name(name):
+    return name.replace('-', '_')
 
 
 def main():
@@ -205,12 +212,12 @@ def main():
                 sys.exit()
             eq = opt.find('=')
             if eq == -1:
-                if eq.startswith('no-'):
-                    environment[opt[3:]] = False
+                if opt.startswith('no-'):
+                    environment[opt_name(opt[3:])] = False
                 else:
-                    environment[opt] = True
+                    environment[opt_name(opt)] = True
             else:
-                key = opt[:eq]
+                key = opt_name(opt[:eq])
                 value = opt[eq + 1:]
                 environment[key] = value
         else:

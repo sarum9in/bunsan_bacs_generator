@@ -64,7 +64,8 @@ which can have the following fields:
     - '$' given code is executed after each test in group
     - 'integer' given test is created from stdout of given command
     - 'integer,integer,...' multiple test group
-    - 'integer-integer' inclusive test range
+    - 'min-max' inclusive test range
+    - 'min-max-step' inclusive test range with given step
 
 It is possible to execute arbitrary python code ins
 
